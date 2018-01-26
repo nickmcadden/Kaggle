@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ContentFilters</key>
+	<dict/>
+	<key>auto_connect</key>
+	<true/>
+	<key>data</key>
+	<dict>
+		<key>connection</key>
+		<dict>
+			<key>database</key>
+			<string>bimbo</string>
+			<key>host</key>
+			<string>127.0.0.1</string>
+			<key>kcid</key>
+			<string>5532637464797460114</string>
+			<key>name</key>
+			<string>local</string>
+			<key>rdbms_type</key>
+			<string>mysql</string>
+			<key>sslCACertFileLocation</key>
+			<string></string>
+			<key>sslCACertFileLocationEnabled</key>
+			<integer>0</integer>
+			<key>sslCertificateFileLocation</key>
+			<string></string>
+			<key>sslCertificateFileLocationEnabled</key>
+			<integer>0</integer>
+			<key>sslKeyFileLocation</key>
+			<string></string>
+			<key>sslKeyFileLocationEnabled</key>
+			<integer>0</integer>
+			<key>type</key>
+			<string>SPTCPIPConnection</string>
+			<key>useSSL</key>
+			<integer>0</integer>
+			<key>user</key>
+			<string>root</string>
+		</dict>
+		<key>session</key>
+		<dict>
+			<key>connectionEncoding</key>
+			<string>utf8</string>
+			<key>contentPageNumber</key>
+			<integer>1</integer>
+			<key>contentSelection</key>
+			<data>
+			YnBsaXN0MDDUAQIDBAUGJCVYJHZlcnNpb25YJG9iamVjdHNZJGFy
+			Y2hpdmVyVCR0b3ASAAGGoKgHCBMUFRYaIVUkbnVsbNMJCgsMDxJX
+			TlMua2V5c1pOUy5vYmplY3RzViRjbGFzc6INDoACgAOiEBGABIAF
+			gAdUdHlwZVRyb3dzXxAdU2VsZWN0aW9uRGV0YWlsVHlwZU5TSW5k
+			ZXhTZXTSFwsYGVxOU1JhbmdlQ291bnQQAIAG0hscHR5aJGNsYXNz
+			bmFtZVgkY2xhc3Nlc1pOU0luZGV4U2V0oh8gWk5TSW5kZXhTZXRY
+			TlNPYmplY3TSGxwiI1xOU0RpY3Rpb25hcnmiIiBfEA9OU0tleWVk
+			QXJjaGl2ZXLRJidUZGF0YYABAAgAEQAaACMALQAyADcAQABGAE0A
+			VQBgAGcAagBsAG4AcQBzAHUAdwB8AIEAoQCmALMAtQC3ALwAxwDQ
+			ANsA3gDpAPIA9wEEAQcBGQEcASEAAAAAAAACAQAAAAAAAAAoAAAA
+			AAAAAAAAAAAAAAABIw==
+			</data>
+			<key>contentSortColIsAsc</key>
+			<true/>
+			<key>contentViewport</key>
+			<string>{{0, 0}, {1055, 562}}</string>
+			<key>isToolbarVisible</key>
+			<true/>
+			<key>queries</key>
+			<string>DROP TABLE IF EXISTS `train`;
+CREATE TABLE `train` (
+  `Semana` int(11) NOT NULL,
+  `Agencia_ID` int(11) DEFAULT NULL,
+  `Canal_ID` int(11) DEFAULT NULL,
+  `Ruta_SAK` int(11) DEFAULT NULL,
+  `Cliente_ID` int(11) NOT NULL,
+  `Producto_ID` int(11) NOT NULL,
+  `Venta_uni_hoy` int(11) DEFAULT NULL,
+  `Venta_hoy` decimal(11,2) DEFAULT NULL,
+  `Dev_uni_proxima` int(11) DEFAULT NULL,
+  `Dev_proxima` decimal(11,2) DEFAULT NULL,
+  `Demanda_uni_equil` int(11) DEFAULT NULL,
+  KEY (`Semana`, `Producto_ID`, `Cliente_ID`, `Agencia_ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+select Producto_ID, Cliente_ID, count(1), sum(Demanda_uni_equil) from train
+group by Producto_ID, Cliente_ID
+order by Producto_ID, Cliente_ID;
+
+ALTER TABLE `train`
+ADD KEY prod_cli (`Producto_ID`, `Cliente_ID`);
+
+select producto_id, 
+ifnull(sum(if(semana=3,venta_hoy,0))/sum(if(semana=3,venta_uni_hoy,0)),0) as week3_ppu,
+sum(if(semana=3,venta_uni_hoy,0)) as week3_units,
+ifnull(sum(if(semana=4,venta_hoy,0))/sum(if(semana=4,venta_uni_hoy,0)),0) as week4_ppu,
+sum(if(semana=4,venta_uni_hoy,0)) as week4_units,
+ifnull(sum(if(semana=5,venta_hoy,0))/sum(if(semana=5,venta_uni_hoy,0)),0) as week5_ppu,
+sum(if(semana=5,venta_uni_hoy,0)) as week5_units,
+ifnull(sum(if(semana=6,venta_hoy,0))/sum(if(semana=6,venta_uni_hoy,0)),0) as week6_ppu,
+sum(if(semana=6,venta_uni_hoy,0)) as week6_units,
+ifnull(sum(if(semana=7,venta_hoy,0))/sum(if(semana=7,venta_uni_hoy,0)),0) as week7_ppu,
+sum(if(semana=7,venta_uni_hoy,0)) as week7_units,
+ifnull(sum(if(semana=8,venta_hoy,0))/sum(if(semana=8,venta_uni_hoy,0)),0) as week8_ppu,
+sum(if(semana=8,venta_uni_hoy,0)) as week8_units,
+ifnull(sum(if(semana=9,venta_hoy,0))/sum(if(semana=9,venta_uni_hoy,0)),0) as week9_ppu,
+sum(if(semana=9,venta_uni_hoy,0)) as week9_units
+from train
+group by producto_id
+order by producto_id;
+</string>
+			<key>view</key>
+			<string>SP_VIEW_CUSTOMQUERY</string>
+			<key>windowVerticalDividerPosition</key>
+			<real>217</real>
+		</dict>
+	</dict>
+	<key>encrypted</key>
+	<false/>
+	<key>format</key>
+	<string>connection</string>
+	<key>queryFavorites</key>
+	<array/>
+	<key>queryHistory</key>
+	<array>
+		<string>select cliente_id, 
+ifnull(sum(if(semana=3,venta_hoy,0))/sum(if(semana=3,venta_uni_hoy,0)),0) as week3_ppu,
+sum(if(semana=3,venta_uni_hoy,0)) as week3_units,
+ifnull(sum(if(semana=4,venta_hoy,0))/sum(if(semana=4,venta_uni_hoy,0)),0) as week4_ppu,
+sum(if(semana=4,venta_uni_hoy,0)) as week4_units,
+ifnull(sum(if(semana=5,venta_hoy,0))/sum(if(semana=5,venta_uni_hoy,0)),0) as week5_ppu,
+sum(if(semana=5,venta_uni_hoy,0)) as week5_units,
+ifnull(sum(if(semana=6,venta_hoy,0))/sum(if(semana=6,venta_uni_hoy,0)),0) as week6_ppu,
+sum(if(semana=6,venta_uni_hoy,0)) as week6_units,
+ifnull(sum(if(semana=7,venta_hoy,0))/sum(if(semana=7,venta_uni_hoy,0)),0) as week7_ppu,
+sum(if(semana=7,venta_uni_hoy,0)) as week7_units,
+ifnull(sum(if(semana=8,venta_hoy,0))/sum(if(semana=8,venta_uni_hoy,0)),0) as week8_ppu,
+sum(if(semana=8,venta_uni_hoy,0)) as week8_units,
+ifnull(sum(if(semana=9,venta_hoy,0))/sum(if(semana=9,venta_uni_hoy,0)),0) as week9_ppu,
+sum(if(semana=9,venta_uni_hoy,0)) as week9_units
+from train
+group by cliente_id
+order by cliente_id</string>
+		<string>select producto_id, count(distinct canal_id)
+from train
+group by producto_id</string>
+		<string>select producto_id, agencia_id,  count(*), avg(Demanda_uni_equil) , std(Demanda_uni_equil)
+from train
+group by producto_id, agencia_id</string>
+		<string>select producto_id, canal_id, count(*), avg(Demanda_uni_equil) , std(Demanda_uni_equil)
+from train
+group by producto_id, canal_id</string>
+		<string>select producto_id, count(*), avg(Demanda_uni_equil) , std(Demanda_uni_equil)
+from train
+group by producto_id</string>
+		<string>select canal_id, count(*) from train
+group by canal_id</string>
+		<string>select distinct canal_id from train</string>
+		<string>select * from train where 
+producto_id = 4280 and cliente_id = 653378 #652940;</string>
+		<string>select * from train where 
+producto_id = 4280 and cliente_id = 652940 #653378;</string>
+		<string>select producto_id, cliente_id, count(1), avg(Demanda_uni_equil) 
+from train
+group by producto_id, cliente_id
+having count(1) &gt; 20</string>
+		<string>select producto_id, 
+ifnull(sum(if(semana=3,venta_hoy,0))/sum(if(semana=3,venta_uni_hoy,0)),0) as week3_ppu,
+sum(if(semana=3,venta_uni_hoy,0)) as week3_units,
+ifnull(sum(if(semana=4,venta_hoy,0))/sum(if(semana=4,venta_uni_hoy,0)),0) as week4_ppu,
+sum(if(semana=4,venta_uni_hoy,0)) as week4_units,
+ifnull(sum(if(semana=5,venta_hoy,0))/sum(if(semana=5,venta_uni_hoy,0)),0) as week5_ppu,
+sum(if(semana=5,venta_uni_hoy,0)) as week5_units,
+ifnull(sum(if(semana=6,venta_hoy,0))/sum(if(semana=6,venta_uni_hoy,0)),0) as week6_ppu,
+sum(if(semana=6,venta_uni_hoy,0)) as week6_units,
+ifnull(sum(if(semana=7,venta_hoy,0))/sum(if(semana=7,venta_uni_hoy,0)),0) as week7_ppu,
+sum(if(semana=7,venta_uni_hoy,0)) as week7_units,
+ifnull(sum(if(semana=8,venta_hoy,0))/sum(if(semana=8,venta_uni_hoy,0)),0) as week8_ppu,
+sum(if(semana=8,venta_uni_hoy,0)) as week8_units,
+ifnull(sum(if(semana=9,venta_hoy,0))/sum(if(semana=9,venta_uni_hoy,0)),0) as week9_ppu,
+sum(if(semana=9,venta_uni_hoy,0)) as week9_units
+from train
+group by producto_id
+having count(1) &gt; 20
+order by producto_id</string>
+		<string>select producto_id, cliente_id, count(1), avg(Demanda_uni_equil) 
+from train
+group by producto_id, cliente_id</string>
+		<string>select producto_id, cliente_id, count(1), med(Demanda_uni_equil) 
+from train
+group by producto_id, cliente_id</string>
+		<string>select producto_id, cliente_id, count(1), median(Demanda_uni_equil) 
+from train
+group by producto_id, cliente_id</string>
+		<string>select count(distinct cliente_id) from train</string>
+		<string>select producto_id, 
+ifnull(sum(if(semana=3,venta_hoy,0))/sum(if(semana=3,venta_uni_hoy,0)),0) as week3_ppu,
+sum(if(semana=3,venta_uni_hoy,0)) as week3_units,
+ifnull(sum(if(semana=4,venta_hoy,0))/sum(if(semana=4,venta_uni_hoy,0)),0) as week4_ppu,
+sum(if(semana=4,venta_uni_hoy,0)) as week4_units,
+ifnull(sum(if(semana=5,venta_hoy,0))/sum(if(semana=5,venta_uni_hoy,0)),0) as week5_ppu,
+sum(if(semana=5,venta_uni_hoy,0)) as week5_units,
+ifnull(sum(if(semana=6,venta_hoy,0))/sum(if(semana=6,venta_uni_hoy,0)),0) as week6_ppu,
+sum(if(semana=6,venta_uni_hoy,0)) as week6_units,
+ifnull(sum(if(semana=7,venta_hoy,0))/sum(if(semana=7,venta_uni_hoy,0)),0) as week7_ppu,
+sum(if(semana=7,venta_uni_hoy,0)) as week7_units,
+ifnull(sum(if(semana=8,venta_hoy,0))/sum(if(semana=8,venta_uni_hoy,0)),0) as week8_ppu,
+sum(if(semana=8,venta_uni_hoy,0)) as week8_units,
+ifnull(sum(if(semana=9,venta_hoy,0))/sum(if(semana=9,venta_uni_hoy,0)),0) as week9_ppu,
+sum(if(semana=9,venta_uni_hoy,0)) as week9_units
+from train
+group by producto_id
+order by producto_id</string>
+		<string>select producto_id, 
+ifnull(sum(if(semana=3,venta_hoy,0))/sum(if(semana=3,venta_uni_hoy,0)),0) as week3_price_per_unit,
+ifnull(sum(if(semana=4,venta_hoy,0))/sum(if(semana=4,venta_uni_hoy,0)),0) as week4_price_per_unit,
+ifnull(sum(if(semana=5,venta_hoy,0))/sum(if(semana=5,venta_uni_hoy,0)),0) as week5_price_per_unit,
+ifnull(sum(if(semana=6,venta_hoy,0))/sum(if(semana=6,venta_uni_hoy,0)),0) as week6_price_per_unit,
+ifnull(sum(if(semana=7,venta_hoy,0))/sum(if(semana=7,venta_uni_hoy,0)),0) as week7_price_per_unit,
+ifnull(sum(if(semana=8,venta_hoy,0))/sum(if(semana=8,venta_uni_hoy,0)),0) as week8_price_per_unit,
+ifnull(sum(if(semana=9,venta_hoy,0))/sum(if(semana=9,venta_uni_hoy,0)),0) as week9_price_per_unit,
+ifnull(sum(if(semana=10,venta_hoy,0))/sum(if(semana=10,venta_uni_hoy,0)),0) as week10_price_per_unit
+from train
+group by producto_id
+order by producto_id</string>
+		<string>select product0_id, 
+ifnull(sum(if(semana=3,venta_hoy,0))/sum(if(semana=3,venta_uni_hoy,0)),0) as week3_price_per_unit,
+ifnull(sum(if(semana=4,venta_hoy,0))/sum(if(semana=4,venta_uni_hoy,0)),0) as week4_price_per_unit,
+ifnull(sum(if(semana=5,venta_hoy,0))/sum(if(semana=5,venta_uni_hoy,0)),0) as week5_price_per_unit,
+ifnull(sum(if(semana=6,venta_hoy,0))/sum(if(semana=6,venta_uni_hoy,0)),0) as week6_price_per_unit,
+ifnull(sum(if(semana=7,venta_hoy,0))/sum(if(semana=7,venta_uni_hoy,0)),0) as week7_price_per_unit,
+ifnull(sum(if(semana=8,venta_hoy,0))/sum(if(semana=8,venta_uni_hoy,0)),0) as week8_price_per_unit,
+ifnull(sum(if(semana=9,venta_hoy,0))/sum(if(semana=9,venta_uni_hoy,0)),0) as week9_price_per_unit,
+ifnull(sum(if(semana=10,venta_hoy,0))/sum(if(semana=10,venta_uni_hoy,0)),0) as week10_price_per_unit
+from train
+group by producto_id
+order by producto_id</string>
+		<string>select product_id, 
+ifnull(sum(if(semana=3,venta_hoy,0))/sum(if(semana=3,venta_uni_hoy,0)),0) as week3_price_per_unit,
+ifnull(sum(if(semana=4,venta_hoy,0))/sum(if(semana=4,venta_uni_hoy,0)),0) as week4_price_per_unit,
+ifnull(sum(if(semana=5,venta_hoy,0))/sum(if(semana=5,venta_uni_hoy,0)),0) as week5_price_per_unit,
+ifnull(sum(if(semana=6,venta_hoy,0))/sum(if(semana=6,venta_uni_hoy,0)),0) as week6_price_per_unit,
+ifnull(sum(if(semana=7,venta_hoy,0))/sum(if(semana=7,venta_uni_hoy,0)),0) as week7_price_per_unit,
+ifnull(sum(if(semana=8,venta_hoy,0))/sum(if(semana=8,venta_uni_hoy,0)),0) as week8_price_per_unit,
+ifnull(sum(if(semana=9,venta_hoy,0))/sum(if(semana=9,venta_uni_hoy,0)),0) as week9_price_per_unit,
+ifnull(sum(if(semana=10,venta_hoy,0))/sum(if(semana=10,venta_uni_hoy,0)),0) as week10_price_per_unit
+from train
+group by product_id
+order by product_id</string>
+		<string>select Agencia_ID, count(distinct Ruta_SAK), count(distinct Cliente_ID)
+from train
+group by Agencia_ID</string>
+	</array>
+	<key>rdbms_type</key>
+	<string>mysql</string>
+	<key>rdbms_version</key>
+	<string>5.5.47</string>
+	<key>version</key>
+	<integer>1</integer>
+</dict>
+</plist>

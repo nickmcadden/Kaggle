@@ -1,0 +1,98 @@
+In file included from admb_ncaa/ncaa_geo_gen_gen.cpp:6:
+./admb_ncaa/ncaa_geo_gen_gen.htp:18:12: error: duplicate member 'nobs'
+  data_int nobs;
+           ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:5:12: note: previous declaration is here
+  data_int nobs;
+           ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:19:15: error: duplicate member 'decaymod'
+  data_number decaymod;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:6:15: note: previous declaration is here
+  data_number decaymod;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:20:16: error: duplicate member 'hscore'
+  data_ivector hscore;
+               ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:7:16: note: previous declaration is here
+  data_ivector hscore;
+               ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:21:16: error: duplicate member 'ascore'
+  data_ivector ascore;
+               ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:8:16: note: previous declaration is here
+  data_ivector ascore;
+               ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:22:15: error: duplicate member 'hteam'
+  data_vector hteam;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:9:15: note: previous declaration is here
+  data_vector hteam;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:23:15: error: duplicate member 'ateam'
+  data_vector ateam;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:10:15: note: previous declaration is here
+  data_vector ateam;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:24:15: error: duplicate member 'yearlag'
+  data_vector yearlag;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:11:15: note: previous declaration is here
+  data_vector yearlag;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:25:15: error: duplicate member 'hmean'
+  data_vector hmean;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:12:15: note: previous declaration is here
+  data_vector hmean;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:26:15: error: duplicate member 'amean'
+  data_vector amean;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:13:15: note: previous declaration is here
+  data_vector amean;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:27:15: error: duplicate member 'distance'
+  data_vector distance;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:14:15: note: previous declaration is here
+  data_vector distance;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:28:15: error: duplicate member 'attendance'
+  data_vector attendance;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:15:15: note: previous declaration is here
+  data_vector attendance;
+              ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:29:16: error: duplicate member 'iconf'
+  data_ivector iconf;
+               ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:16:16: note: previous declaration is here
+  data_ivector iconf;
+               ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:30:16: error: duplicate member 'hbias'
+  data_ivector hbias;
+               ^
+./admb_ncaa/ncaa_geo_gen_gen.htp:17:16: note: previous declaration is here
+  data_ivector hbias;
+               ^
+admb_ncaa/ncaa_geo_gen_gen.cpp:98:3: error: no matching function for call to 'admaster_slave_variable_interface'
+  admaster_slave_variable_interface(*this);
+  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/local/admb/include/admodel.h:2788:6: note: candidate function not viable: no known conversion from 'model_parameters' to 'const ad_comm' for 1st argument
+void admaster_slave_variable_interface(const ad_comm& mp);
+     ^
+/usr/local/admb/include/admodel.h:2789:6: note: candidate function not viable: requires 0 arguments, but 1 was provided
+void admaster_slave_variable_interface(void);
+     ^
+admb_ncaa/ncaa_geo_gen_gen.cpp:134:8: error: no matching member function for call to 'computations'
+    mp.computations(argc,argv);
+    ~~~^~~~~~~~~~~~
+/usr/local/admb/include/admodel.h:1787:8: note: candidate function not viable: no known conversion from 'model_parameters' to 'function_minimizer' for object argument
+  void computations(int argc,char * argv[]);
+       ^
+/usr/local/admb/include/admodel.h:1791:8: note: candidate function not viable: requires 0 arguments, but 2 were provided
+  void computations(void);
+       ^
+15 errors generated.

@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ContentFilters</key>
+	<dict/>
+	<key>auto_connect</key>
+	<true/>
+	<key>data</key>
+	<dict>
+		<key>connection</key>
+		<dict>
+			<key>database</key>
+			<string>bimbo</string>
+			<key>host</key>
+			<string>127.0.0.1</string>
+			<key>kcid</key>
+			<string>2987422015524566389</string>
+			<key>name</key>
+			<string>footy</string>
+			<key>rdbms_type</key>
+			<string>mysql</string>
+			<key>sslCACertFileLocation</key>
+			<string></string>
+			<key>sslCACertFileLocationEnabled</key>
+			<integer>0</integer>
+			<key>sslCertificateFileLocation</key>
+			<string></string>
+			<key>sslCertificateFileLocationEnabled</key>
+			<integer>0</integer>
+			<key>sslKeyFileLocation</key>
+			<string></string>
+			<key>sslKeyFileLocationEnabled</key>
+			<integer>0</integer>
+			<key>type</key>
+			<string>SPTCPIPConnection</string>
+			<key>useSSL</key>
+			<integer>0</integer>
+			<key>user</key>
+			<string>root</string>
+		</dict>
+		<key>session</key>
+		<dict>
+			<key>connectionEncoding</key>
+			<string>latin1</string>
+			<key>contentFilter</key>
+			<dict/>
+			<key>contentPageNumber</key>
+			<integer>1</integer>
+			<key>contentSelection</key>
+			<data>
+			YnBsaXN0MDDUAQIDBAUGJCVYJHZlcnNpb25YJG9iamVjdHNZJGFy
+			Y2hpdmVyVCR0b3ASAAGGoKgHCBMUFRYaIVUkbnVsbNMJCgsMDxJX
+			TlMua2V5c1pOUy5vYmplY3RzViRjbGFzc6INDoACgAOiEBGABIAF
+			gAdUdHlwZVRyb3dzXxAdU2VsZWN0aW9uRGV0YWlsVHlwZU5TSW5k
+			ZXhTZXTSFwsYGVxOU1JhbmdlQ291bnQQAIAG0hscHR5aJGNsYXNz
+			bmFtZVgkY2xhc3Nlc1pOU0luZGV4U2V0oh8gWk5TSW5kZXhTZXRY
+			TlNPYmplY3TSGxwiI1xOU0RpY3Rpb25hcnmiIiBfEA9OU0tleWVk
+			QXJjaGl2ZXLRJidUZGF0YYABAAgAEQAaACMALQAyADcAQABGAE0A
+			VQBgAGcAagBsAG4AcQBzAHUAdwB8AIEAoQCmALMAtQC3ALwAxwDQ
+			ANsA3gDpAPIA9wEEAQcBGQEcASEAAAAAAAACAQAAAAAAAAAoAAAA
+			AAAAAAAAAAAAAAABIw==
+			</data>
+			<key>contentSortColIsAsc</key>
+			<true/>
+			<key>contentViewport</key>
+			<string>{{0, 0}, {1099, 562}}</string>
+			<key>isToolbarVisible</key>
+			<true/>
+			<key>queries</key>
+			<string>DROP TABLE IF EXISTS `train`;
+CREATE TABLE `train` (
+  `Semana` int(11) NOT NULL,
+  `Agencia_ID` int(11) DEFAULT NULL,
+  `Canal_ID` int(11) DEFAULT NULL,
+  `Ruta_SAK` int(11) DEFAULT NULL,
+  `Cliente_ID` int(11) NOT NULL,
+  `Producto_ID` int(11) NOT NULL,
+  `Venta_uni_hoy` int(11) DEFAULT NULL,
+  `Venta_hoy` decimal(11,2) DEFAULT NULL,
+  `Dev_uni_proxima` int(11) DEFAULT NULL,
+  `Dev_proxima` decimal(11,2) DEFAULT NULL,
+  `Demanda_uni_equil` int(11) DEFAULT NULL,
+  KEY (`Semana`, `Producto_ID`, `Cliente_ID`, `Agencia_ID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+ALTER TABLE `train`
+ADD KEY prod_cli (`Producto_ID`, `Cliente_ID`);
+
+DROP TABLE IF EXISTS `prod_client`;
+CREATE TABLE `prod_client` (
+  `ProductID` int(11) NOT NULL,
+  `ClientID` int(11) NOT NULL,
+  `week3` decimal(11,3) DEFAULT NULL,
+  `week4` decimal(11,3) DEFAULT NULL,
+  `week5` decimal(11,3) DEFAULT NULL,
+  `week6` decimal(11,3) DEFAULT NULL,
+  `week7` decimal(11,3) DEFAULT NULL,  
+  `week8` decimal(11,3) DEFAULT NULL,
+  `week9` decimal(11,3) DEFAULT NULL,
+  `avg_per_week` decimal(11,3) DEFAULT NULL,
+  `min_per_week` decimal(11,3) DEFAULT NULL,
+  KEY (`ProductID`, `ClientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+insert into prod_client(
+select producto_id, cliente_id,
+sum(if(semana=3,Demanda_uni_equil,0)) as week3_units,
+sum(if(semana=4,Demanda_uni_equil,0)) as week4_units,
+sum(if(semana=5,Demanda_uni_equil,0)) as week5_units,
+sum(if(semana=6,Demanda_uni_equil,0)) as week6_units,
+sum(if(semana=7,Demanda_uni_equil,0)) as week7_units,
+sum(if(semana=8,Demanda_uni_equil,0)) as week8_units,
+sum(if(semana=9,Demanda_uni_equil,0)) as week9_units,
+avg(Demanda_uni_equil) as weekly_avg
+from train
+group by producto_id, cliente_id
+order by producto_id, cliente_id);
+
+
+DROP TABLE IF EXISTS `prod_client_cv`;
+CREATE TABLE `prod_client_cv` (
+  `ProductID` int(11) NOT NULL,
+  `ClientID` int(11) NOT NULL,
+  `week3` decimal(11,3) DEFAULT NULL,
+  `week4` decimal(11,3) DEFAULT NULL,
+  `week5` decimal(11,3) DEFAULT NULL,
+  `week6` decimal(11,3) DEFAULT NULL,
+  `week7` decimal(11,3) DEFAULT NULL,
+  `avg_per_week` decimal(11,3) DEFAULT NULL,
+  KEY (`ProductID`, `ClientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+insert into prod_client_cv(
+select producto_id, cliente_id,
+sum(if(semana=3,Demanda_uni_equil,0)) as week3_units,
+sum(if(semana=4,Demanda_uni_equil,0)) as week4_units,
+sum(if(semana=5,Demanda_uni_equil,0)) as week5_units,
+sum(if(semana=6,Demanda_uni_equil,0)) as week6_units,
+sum(if(semana=7,Demanda_uni_equil,0)) as week7_units,
+avg(Demanda_uni_equil) as weekly_avg
+from train
+where semana &lt;=7
+group by producto_id, cliente_id
+order by producto_id, cliente_id);
+
+
+select producto_id, cliente_id,
+ifnull(sum(if(semana=3,venta_hoy,0))/sum(if(semana=3,venta_uni_hoy,0)),0) as week3_ppu,
+sum(if(semana=3,venta_uni_hoy,0)) as week3_units,
+ifnull(sum(if(semana=4,venta_hoy,0))/sum(if(semana=4,venta_uni_hoy,0)),0) as week4_ppu,
+sum(if(semana=4,venta_uni_hoy,0)) as week4_units,
+ifnull(sum(if(semana=5,venta_hoy,0))/sum(if(semana=5,venta_uni_hoy,0)),0) as week5_ppu,
+sum(if(semana=5,venta_uni_hoy,0)) as week5_units,
+ifnull(sum(if(semana=6,venta_hoy,0))/sum(if(semana=6,venta_uni_hoy,0)),0) as week6_ppu,
+sum(if(semana=6,venta_uni_hoy,0)) as week6_units,
+ifnull(sum(if(semana=7,venta_hoy,0))/sum(if(semana=7,venta_uni_hoy,0)),0) as week7_ppu,
+sum(if(semana=7,venta_uni_hoy,0)) as week7_units,
+ifnull(sum(if(semana=8,venta_hoy,0))/sum(if(semana=8,venta_uni_hoy,0)),0) as week8_ppu,
+sum(if(semana=8,venta_uni_hoy,0)) as week8_units,
+ifnull(sum(if(semana=9,venta_hoy,0))/sum(if(semana=9,venta_uni_hoy,0)),0) as week9_ppu,
+sum(if(semana=9,venta_uni_hoy,0)) as week9_units
+from train
+group by producto_id
+order by producto_id;
+
+select ProductID, count(distinct clientid),
+sum(week3),
+sum(week4),
+sum(week5),
+sum(week6),
+sum(week7),
+sum(week8),
+sum(week9)
+from prod_client
+group by ProductID;
+limit 10000;
+
+select ProductID, ClientID,
+week3,
+week4,
+week5,
+week6,
+week7,
+week8,
+week9
+from prod_client
+where ProductID = 1309;
+
+update prod_client set week9 = avg_per_week where week9 = 0;
+update prod_client set week8 = avg_per_week where week8 = 0;
+update prod_client set week7 = avg_per_week where week7 = 0;
+update prod_client set week6 = avg_per_week where week6 = 0;
+update prod_client set week5 = avg_per_week where week5 = 0;
+update prod_client set week4 = avg_per_week where week4 = 0;
+update prod_client set week3 = avg_per_week where week3 = 0;
+
+
+select * from train where Producto_ID = 1278 and Cliente_ID = 4555688;
+select * from prod_client where ProductID = 41 and ClientID = 685079;
+select * from prod_client where ProductID = 49994 and ClientID = 4728456;
+
+     </string>
+			<key>table</key>
+			<string>prod_client</string>
+			<key>view</key>
+			<string>SP_VIEW_CUSTOMQUERY</string>
+			<key>windowVerticalDividerPosition</key>
+			<real>173</real>
+		</dict>
+	</dict>
+	<key>encrypted</key>
+	<false/>
+	<key>format</key>
+	<string>connection</string>
+	<key>queryFavorites</key>
+	<array/>
+	<key>queryHistory</key>
+	<array>
+		<string>update prod_client set week9 = avg_per_week where week9 is null;
+update prod_client set week8 = avg_per_week where week8 is null;
+update prod_client set week7 = avg_per_week where week7 is null;
+update prod_client set week6 = avg_per_week where week6 is null;
+update prod_client set week5 = avg_per_week where week5 is null;
+update prod_client set week4 = avg_per_week where week4 is null;
+update prod_client set week3 = avg_per_week where week3 is null;
+update prod_client_cv set week3 = avg_per_week where week3 is null;
+update prod_client_cv set week4 = avg_per_week where week4 is null;
+update prod_client_cv set week5 = avg_per_week where week5 is null;
+update prod_client_cv set week6 = avg_per_week where week6 is null;
+update prod_client_cv set week7 = avg_per_week where week7 is null</string>
+		<string>DROP TABLE IF EXISTS `prod_client_cv`;
+CREATE TABLE `prod_client_cv` (
+  `ProductID` int(11) NOT NULL,
+  `ClientID` int(11) NOT NULL,
+  `week3` decimal(11,3) DEFAULT NULL,
+  `week4` decimal(11,3) DEFAULT NULL,
+  `week5` decimal(11,3) DEFAULT NULL,
+  `week6` decimal(11,3) DEFAULT NULL,
+  `week7` decimal(11,3) DEFAULT NULL,
+  `avg_per_week` decimal(11,3) DEFAULT NULL,
+  `min_per_week` decimal(11,3) DEFAULT NULL,
+  KEY (`ProductID`, `ClientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+insert into prod_client_cv(
+select producto_id, cliente_id,
+avg(if(semana=3,Demanda_uni_equil,null)) as week3_units,
+avg(if(semana=4,Demanda_uni_equil,null)) as week4_units,
+avg(if(semana=5,Demanda_uni_equil,null)) as week5_units,
+avg(if(semana=6,Demanda_uni_equil,null)) as week6_units,
+avg(if(semana=7,Demanda_uni_equil,null)) as week7_units,
+avg(Demanda_uni_equil) as weekly_avg,
+min(Demanda_uni_equil) as weekly_min
+from train
+where semana &lt;=7
+group by producto_id, cliente_id
+order by producto_id, cliente_id)</string>
+		<string>select * from prod_client where productid = 6476 and clientid=653378</string>
+		<string>DROP TABLE IF EXISTS `prod_client`;
+CREATE TABLE `prod_client` (
+  `ProductID` int(11) NOT NULL,
+  `ClientID` int(11) NOT NULL,
+  `week3` decimal(11,3) DEFAULT NULL,
+  `week4` decimal(11,3) DEFAULT NULL,
+  `week5` decimal(11,3) DEFAULT NULL,
+  `week6` decimal(11,3) DEFAULT NULL,
+  `week7` decimal(11,3) DEFAULT NULL,  
+  `week8` decimal(11,3) DEFAULT NULL,
+  `week9` decimal(11,3) DEFAULT NULL,
+  `avg_per_week` decimal(11,3) DEFAULT NULL,
+  `min_per_week` decimal(11,3) DEFAULT NULL,
+  KEY (`ProductID`, `ClientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+insert into prod_client(
+select producto_id, cliente_id,
+avg(if(semana=3,Demanda_uni_equil,null)) as week3_units,
+avg(if(semana=4,Demanda_uni_equil,null)) as week4_units,
+avg(if(semana=5,Demanda_uni_equil,null)) as week5_units,
+avg(if(semana=6,Demanda_uni_equil,null)) as week6_units,
+avg(if(semana=7,Demanda_uni_equil,null)) as week7_units,
+avg(if(semana=8,Demanda_uni_equil,null)) as week8_units,
+avg(if(semana=9,Demanda_uni_equil,null)) as week9_units,
+avg(Demanda_uni_equil) as weekly_avg,
+min(Demanda_uni_equil) as weekly_min
+from train
+group by producto_id, cliente_id
+order by producto_id, cliente_id)</string>
+		<string>select avg(if(semana=3,Demanda_uni_equil,null)) as week3_units
+from train</string>
+		<string>select sum(if(semana=3,Demanda_uni_equil,null))/count(if(semana=3,Demanda_uni_equil,null)) as week3_units
+from train</string>
+		<string>select sum(if(semana=3,Demanda_uni_equil,null)) as week3_units
+from train</string>
+		<string>select avg(if(semana=3,Demanda_uni_equil,0)) as week3_units
+from train</string>
+		<string>select sum(if(semana=3,Demanda_uni_equil,0)) as week3_units
+from train</string>
+		<string>select *from prod_client where productid = 6476 and clientid=653378</string>
+		<string>select semana, clientid, productid from prod_client where productid = 6476 and clientid=653378</string>
+		<string>select clientid, productid from prod_client where productid = 6476 and clientid=653378</string>
+		<string>select producto_id, cliente_id, count(1)
+from train
+group by producto_id, cliente_id
+having count(1) &gt; 10</string>
+		<string>select producto_id, cliente_i, count(1)
+from train
+group by producto_id, cliente_id
+having count(1) &gt; 10</string>
+		<string>update prod_client set week9 = avg_per_week where week9 = 0;
+update prod_client set week8 = avg_per_week where week8 = 0;
+update prod_client set week7 = avg_per_week where week7 = 0;
+update prod_client set week6 = avg_per_week where week6 = 0;
+update prod_client set week5 = avg_per_week where week5 = 0;
+update prod_client set week4 = avg_per_week where week4 = 0;
+update prod_client set week3 = avg_per_week where week3 = 0;
+update prod_client_cv set week3 = avg_per_week where week3 = 0;
+update prod_client_cv set week4 = avg_per_week where week4 = 0;
+update prod_client_cv set week5 = avg_per_week where week5 = 0;
+update prod_client_cv set week6 = avg_per_week where week6 = 0;
+update prod_client_cv set week7 = avg_per_week where week7 = 0</string>
+		<string>DROP TABLE IF EXISTS `prod_client_cv`;
+CREATE TABLE `prod_client_cv` (
+  `ProductID` int(11) NOT NULL,
+  `ClientID` int(11) NOT NULL,
+  `week3` decimal(11,3) DEFAULT NULL,
+  `week4` decimal(11,3) DEFAULT NULL,
+  `week5` decimal(11,3) DEFAULT NULL,
+  `week6` decimal(11,3) DEFAULT NULL,
+  `week7` decimal(11,3) DEFAULT NULL,
+  `avg_per_week` decimal(11,3) DEFAULT NULL,
+  `min_per_week` decimal(11,3) DEFAULT NULL,
+  KEY (`ProductID`, `ClientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+insert into prod_client_cv(
+select producto_id, cliente_id,
+sum(if(semana=3,Demanda_uni_equil,0)) as week3_units,
+sum(if(semana=4,Demanda_uni_equil,0)) as week4_units,
+sum(if(semana=5,Demanda_uni_equil,0)) as week5_units,
+sum(if(semana=6,Demanda_uni_equil,0)) as week6_units,
+sum(if(semana=7,Demanda_uni_equil,0)) as week7_units,
+avg(Demanda_uni_equil) as weekly_avg,
+min(Demanda_uni_equil) as weekly_min
+from train
+where semana &lt;=7
+group by producto_id, cliente_id
+order by producto_id, cliente_id)</string>
+		<string>DROP TABLE IF EXISTS `prod_client`;
+CREATE TABLE `prod_client` (
+  `ProductID` int(11) NOT NULL,
+  `ClientID` int(11) NOT NULL,
+  `week3` decimal(11,3) DEFAULT NULL,
+  `week4` decimal(11,3) DEFAULT NULL,
+  `week5` decimal(11,3) DEFAULT NULL,
+  `week6` decimal(11,3) DEFAULT NULL,
+  `week7` decimal(11,3) DEFAULT NULL,  
+  `week8` decimal(11,3) DEFAULT NULL,
+  `week9` decimal(11,3) DEFAULT NULL,
+  `avg_per_week` decimal(11,3) DEFAULT NULL,
+  `min_per_week` decimal(11,3) DEFAULT NULL,
+  KEY (`ProductID`, `ClientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+insert into prod_client(
+select producto_id, cliente_id,
+sum(if(semana=3,Demanda_uni_equil,0)) as week3_units,
+sum(if(semana=4,Demanda_uni_equil,0)) as week4_units,
+sum(if(semana=5,Demanda_uni_equil,0)) as week5_units,
+sum(if(semana=6,Demanda_uni_equil,0)) as week6_units,
+sum(if(semana=7,Demanda_uni_equil,0)) as week7_units,
+sum(if(semana=8,Demanda_uni_equil,0)) as week8_units,
+sum(if(semana=9,Demanda_uni_equil,0)) as week9_units,
+avg(Demanda_uni_equil) as weekly_avg,
+min(Demanda_uni_equil) as weekly_min
+from train
+group by producto_id, cliente_id
+order by producto_id, cliente_id)</string>
+		<string>DROP TABLE IF EXISTS `prod_client`;
+CREATE TABLE `prod_client` (
+  `ProductID` int(11) NOT NULL,
+  `ClientID` int(11) NOT NULL,
+  `week3` decimal(11,3) DEFAULT NULL,
+  `week4` decimal(11,3) DEFAULT NULL,
+  `week5` decimal(11,3) DEFAULT NULL,
+  `week6` decimal(11,3) DEFAULT NULL,
+  `week7` decimal(11,3) DEFAULT NULL,  
+  `week8` decimal(11,3) DEFAULT NULL,
+  `week9` decimal(11,3) DEFAULT NULL,
+  `avg_per_week` int(11) DEFAULT NULL,
+  KEY (`ProductID`, `ClientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+insert into prod_client(
+select producto_id, cliente_id,
+sum(if(semana=3,Demanda_uni_equil,0)) as week3_units,
+sum(if(semana=4,Demanda_uni_equil,0)) as week4_units,
+sum(if(semana=5,Demanda_uni_equil,0)) as week5_units,
+sum(if(semana=6,Demanda_uni_equil,0)) as week6_units,
+sum(if(semana=7,Demanda_uni_equil,0)) as week7_units,
+sum(if(semana=8,Demanda_uni_equil,0)) as week8_units,
+sum(if(semana=9,Demanda_uni_equil,0)) as week9_units,
+avg(Demanda_uni_equil) as weekly_avg
+from train
+group by producto_id, cliente_id
+order by producto_id, cliente_id)</string>
+		<string>DROP TABLE IF EXISTS `prod_client`;
+CREATE TABLE `prod_client` (
+  `ProductID` int(11) NOT NULL,
+  `ClientID` int(11) NOT NULL,
+  `week3` decimal(11,3) DEFAULT NULL,
+  `week4` decimal(11,3) DEFAULT NULL,
+  `week5` decimal(11,3) DEFAULT NULL,
+  `week6` decimal(11,3) DEFAULT NULL,
+  `week7` decimal(11,3) DEFAULT NULL,  
+  `week8` decimal(11,3) DEFAULT NULL,
+  `week9` decimal(11,3) DEFAULT NULL,
+  `avg_per_week` int(11) DEFAULT NULL,
+  KEY (`ProductID`, `ClientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1</string>
+		<string>DROP TABLE IF EXISTS `prod_client_cv`;
+CREATE TABLE `prod_client_cv` (
+  `ProductID` int(11) NOT NULL,
+  `ClientID` int(11) NOT NULL,
+  `week3` decimal(11,3) DEFAULT NULL,
+  `week4` decimal(11,3) DEFAULT NULL,
+  `week5` decimal(11,3) DEFAULT NULL,
+  `week6` decimal(11,3) DEFAULT NULL,
+  `week7` decimal(11,3) DEFAULT NULL,
+  `avg_per_week` decimal(11,3) DEFAULT NULL,
+  KEY (`ProductID`, `ClientID`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+insert into prod_client_cv(
+select producto_id, cliente_id,
+sum(if(semana=3,Demanda_uni_equil,0)) as week3_units,
+sum(if(semana=4,Demanda_uni_equil,0)) as week4_units,
+sum(if(semana=5,Demanda_uni_equil,0)) as week5_units,
+sum(if(semana=6,Demanda_uni_equil,0)) as week6_units,
+sum(if(semana=7,Demanda_uni_equil,0)) as week7_units,
+avg(Demanda_uni_equil) as weekly_avg
+from train
+where semana &lt;=7
+group by producto_id, cliente_id
+order by producto_id, cliente_id)</string>
+	</array>
+	<key>rdbms_type</key>
+	<string>mysql</string>
+	<key>rdbms_version</key>
+	<string>5.5.47</string>
+	<key>version</key>
+	<integer>1</integer>
+</dict>
+</plist>

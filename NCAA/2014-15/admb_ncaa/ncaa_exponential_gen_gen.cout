@@ -1,0 +1,19 @@
+In file included from ncaa_exponential_gen_gen.cpp:6:
+./ncaa_exponential_gen_gen.htp:14: error: declaration of ‘data_int model_data::nobs’
+./ncaa_exponential_gen_gen.htp:5: error: conflicts with previous declaration ‘data_int model_data::nobs’
+./ncaa_exponential_gen_gen.htp:15: error: declaration of ‘data_number model_data::decaymod’
+./ncaa_exponential_gen_gen.htp:6: error: conflicts with previous declaration ‘data_number model_data::decaymod’
+./ncaa_exponential_gen_gen.htp:16: error: declaration of ‘data_ivector model_data::wscore’
+./ncaa_exponential_gen_gen.htp:7: error: conflicts with previous declaration ‘data_ivector model_data::wscore’
+./ncaa_exponential_gen_gen.htp:17: error: declaration of ‘data_ivector model_data::lscore’
+./ncaa_exponential_gen_gen.htp:8: error: conflicts with previous declaration ‘data_ivector model_data::lscore’
+./ncaa_exponential_gen_gen.htp:18: error: declaration of ‘data_vector model_data::wteam’
+./ncaa_exponential_gen_gen.htp:9: error: conflicts with previous declaration ‘data_vector model_data::wteam’
+./ncaa_exponential_gen_gen.htp:19: error: declaration of ‘data_vector model_data::lteam’
+./ncaa_exponential_gen_gen.htp:10: error: conflicts with previous declaration ‘data_vector model_data::lteam’
+./ncaa_exponential_gen_gen.htp:20: error: declaration of ‘data_vector model_data::yearlag’
+./ncaa_exponential_gen_gen.htp:11: error: conflicts with previous declaration ‘data_vector model_data::yearlag’
+./ncaa_exponential_gen_gen.htp:21: error: declaration of ‘data_vector model_data::xmean’
+./ncaa_exponential_gen_gen.htp:12: error: conflicts with previous declaration ‘data_vector model_data::xmean’
+./ncaa_exponential_gen_gen.htp:22: error: declaration of ‘data_vector model_data::ymean’
+./ncaa_exponential_gen_gen.htp:13: error: conflicts with previous declaration ‘data_vector model_data::ymean’

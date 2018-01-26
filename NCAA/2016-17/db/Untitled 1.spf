@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ContentFilters</key>
+	<dict/>
+	<key>auto_connect</key>
+	<true/>
+	<key>data</key>
+	<dict>
+		<key>connection</key>
+		<dict>
+			<key>database</key>
+			<string>ncaa</string>
+			<key>host</key>
+			<string>127.0.0.1</string>
+			<key>kcid</key>
+			<string>5532637464797460114</string>
+			<key>name</key>
+			<string>local</string>
+			<key>rdbms_type</key>
+			<string>mysql</string>
+			<key>sslCACertFileLocation</key>
+			<string></string>
+			<key>sslCACertFileLocationEnabled</key>
+			<integer>0</integer>
+			<key>sslCertificateFileLocation</key>
+			<string></string>
+			<key>sslCertificateFileLocationEnabled</key>
+			<integer>0</integer>
+			<key>sslKeyFileLocation</key>
+			<string></string>
+			<key>sslKeyFileLocationEnabled</key>
+			<integer>0</integer>
+			<key>type</key>
+			<string>SPTCPIPConnection</string>
+			<key>useSSL</key>
+			<integer>0</integer>
+			<key>user</key>
+			<string>root</string>
+		</dict>
+		<key>session</key>
+		<dict>
+			<key>connectionEncoding</key>
+			<string>latin1</string>
+			<key>contentFilter</key>
+			<dict/>
+			<key>contentPageNumber</key>
+			<integer>1</integer>
+			<key>contentSelection</key>
+			<data>
+			YnBsaXN0MDDUAQIDBAUGNjdYJHZlcnNpb25YJG9iamVjdHNZJGFy
+			Y2hpdmVyVCR0b3ASAAGGoK0HCBUWFxgZHSQoLDA0VSRudWxs0wkK
+			CwwQFFdOUy5rZXlzWk5TLm9iamVjdHNWJGNsYXNzow0OD4ACgAOA
+			BKMREhOABYAGgAiADFR0eXBlVHJvd3NUa2V5c18QJlNlbGVjdGlv
+			bkRldGFpbFR5cGVQcmltYXJ5S2V5ZWREZXRhaWxz0wkKCxobHKCg
+			gAfSHh8gIVokY2xhc3NuYW1lWCRjbGFzc2VzXxATTlNNdXRhYmxl
+			RGljdGlvbmFyeaMgIiNcTlNEaWN0aW9uYXJ5WE5TT2JqZWN00goL
+			JSehJoAJgAvSCykqK1lOUy5zdHJpbmeACld0ZWFtX2lk0h4fLS5f
+			EA9OU011dGFibGVTdHJpbmejLS8jWE5TU3RyaW5n0h4fMTJeTlNN
+			dXRhYmxlQXJyYXmjMTMjV05TQXJyYXnSHh8iNaIiI18QD05TS2V5
+			ZWRBcmNoaXZlctE4OVRkYXRhgAEACAARABoAIwAtADIANwBFAEsA
+			UgBaAGUAbABwAHIAdAB2AHoAfAB+AIAAggCHAIwAkQC6AMEAwgDD
+			AMUAygDVAN4A9AD4AQUBDgETARUBFwEZAR4BKAEqATIBNwFJAU0B
+			VgFbAWoBbgF2AXsBfgGQAZMBmAAAAAAAAAIBAAAAAAAAADoAAAAA
+			AAAAAAAAAAAAAAGa
+			</data>
+			<key>contentSortColIsAsc</key>
+			<true/>
+			<key>contentViewport</key>
+			<string>{{0, 0}, {1059, 551}}</string>
+			<key>isToolbarVisible</key>
+			<true/>
+			<key>queries</key>
+			<string>/* Requires these tables imported from csv
+game_reg_temp (reglar season games detailed version)
+team_names
+team_locations
+team_attendance
+ncaa_conferences
+*/
+
+/* import teams_temp games_reg_temp */
+drop table if exists team;
+drop table if exists agg_games_won;
+drop table if exists agg_games_lost;
+drop table if exists agg_games_won_nc;
+drop table if exists agg_games_lost_nc;
+drop table if exists agg_season_team;
+drop table if exists game_reg_basic;
+drop table if exists game_reg_custom_metrics;
+drop table if exists agg_win_custom;
+drop table if exists agg_win_custom_nc;
+drop table if exists agg_loss_custom;
+drop table if exists agg_loss_custom_nc;
+drop table if exists agg_season_team_features;
+drop table if exists home_away_means;
+
+create table team as
+select tn.team_id, tn.team_name, tl.lat, tl.lng, tl.conf,ifnull(ta.attendance,5000) as attendance
+from team_names tn
+inner join team_locations tl on tl.team_id = tn.team_id
+left join team_attendance ta on ta.team_name = tn.team_name;
+
+alter table team
+modify column team_id int(11) not null primary key;
+
+alter table game_reg_tmp modify column lteam int(11) not null;
+alter table game_reg_tmp modify column lteam int(11) FOREIGN KEY REFERENCES team(team_id);
+alter table game_reg_tmp modify column season int(11) not null;
+alter table game_reg_tmp modify column wteam int(11) not null;
+alter table game_reg_tmp modify column wteam int(11) FOREIGN KEY REFERENCES team(team_id);
+
+create table game_reg_basic
+as 
+select g.*, 
+wfga+wfga3 as wtempo,
+wfgm/(wfgm+wfga) as w2pc,
+wfgm3/(wfgm3+wfga3) as w3pc,
+wftm/(wftm+wfta) as wftpc,
+lfga+lfga3 as ltempo,
+lfgm/(lfgm+lfga) as l2pc,
+lfgm3/(lfgm3+lfga3) as l3pc,
+lftm/(lftm+lfta) as lftpc,
+if(t1.conf=t2.conf,'Y','N') as iconf,
+t1.lat as wlat,
+t1.lng as wlng,
+t2.lat as llat,
+t2.lng as llng,
+if(wloc="H",t1.attendance,if(wloc="A",t2.attendance,0)) as attendance
+from game_reg_tmp g
+inner join team t1 on t1.team_id = g.wteam
+inner join team t2 on t2.team_id = g.lteam;
+
+create index idx_season_wteam
+ON game_reg_basic (season, wteam);
+create index idx_season_lteam
+ON game_reg_basic (season, lteam);
+
+
+create table agg_games_won as
+select season, wteam as team_id, 
+avg(wscore) as my_wpts, avg(wscore-lscore) as my_wmar, avg(lscore) as my_opp_lpts, count(*) as my_wgames
+from game_reg_basic
+group by season, wteam;
+
+create table agg_games_lost as
+select season, lteam as team_id, 
+avg(lscore) as my_lpts, avg(lscore-wscore) as my_lmar, avg(wscore) as my_opp_wpts, count(*) as my_lgames
+from game_reg_basic
+group by season, lteam;
+
+create table agg_games_won_nc as
+select season, wteam as team_id,
+avg(wscore) as my_wncpts, avg(wscore-lscore) as my_wncmar, avg(lscore) as my_opp_lncpts, count(*) as my_wncgames
+from game_reg_basic
+where iconf = 'N'
+group by season, wteam;
+
+create table agg_games_lost_nc as
+select season, lteam as team_id, 
+avg(lscore) as my_lncpts, avg(lscore-wscore) as my_lncmar, avg(wscore) as my_opp_wncpts, count(*) as my_lncgames
+from game_reg_basic
+where iconf = 'N'
+group by season, lteam;
+
+create table agg_season_team as
+select a.season, a.team_id,my_wpts,my_wmar,my_wgames,ifnull(my_lpts,0) my_lpts,ifnull(my_lmar,0) my_lmar,ifnull(my_lgames,0) my_lgames,ifnull(my_wncpts,0) my_wncpts,ifnull(my_wncmar,0) my_wncmar,ifnull(my_wncgames,0) my_wncgames,ifnull(my_lncpts,0) my_lncpts,ifnull(my_lncmar,0) my_lncmar,ifnull(my_lncgames,0) my_lncgames,ifnull(my_opp_wpts,0) my_opp_wpts,ifnull(my_opp_lpts,0) my_opp_lpts,ifnull(my_opp_wncpts,0) my_opp_wncpts,ifnull(my_opp_lncpts,0) my_opp_lncpts,
+my_wgames+ifnull(my_lgames,0) as my_totgames, my_wncgames+ifnull(my_lncgames,0) as my_ncgames
+from agg_games_won a
+left join agg_games_lost b on a.season=b.season and a.team_id = b.team_id
+left join agg_games_won_nc c on a.season=c.season and a.team_id = c.team_id
+left join agg_games_lost_nc d on a.season=d.season and a.team_id = d.team_id;
+
+alter table agg_season_team 
+add column ppg decimal(9,4) not null,
+add column ppgo decimal(9,4) not null,
+add column mar decimal(9,4) not null,
+add column winperc decimal(9,4) not null,
+add column ppg_nc decimal(9,4) not null,
+add column ppgo_nc decimal(9,4) not null,
+add column mar_nc decimal(9,4) not null,
+add column winperc_nc decimal(9,4) not null;
+
+update agg_season_team 
+set ppg  = (my_wpts*my_wgames+my_lpts*my_lgames)/my_totgames,
+ppgo = (my_opp_wpts*my_lgames+my_opp_lpts*my_wgames)/my_totgames,
+mar  = (my_wmar*my_wgames+my_lmar*my_lgames)/my_totgames,
+winperc = my_wgames/my_totgames,
+ppg_nc  = (my_wncpts*my_wncgames+my_lncpts*my_lncgames)/my_ncgames,
+ppgo_nc = (my_opp_wncpts*my_lncgames+my_opp_lncpts*my_wncgames)/my_ncgames,
+mar_nc  = (my_wncmar*my_wncgames+my_lncmar*my_lncgames)/my_ncgames,
+winperc_nc = my_wncgames/my_ncgames;
+
+create index idx_season_team_id
+ON agg_season_team(season, team_id);
+
+create table game_reg_custom_metrics as
+select g.season, g.daynum, g.iconf, g.wteam, g.wscore, g.lteam, g.lscore,
+g.wtempo,g.w2pc,g.w3pc,g.wftpc,g.wblk,g.wstl,g.wdr,g.wor,g.wto,g.wpf,g.wast,
+g.ltempo,g.l2pc,g.l3pc,g.lftpc,g.lblk,g.lstl,g.ldr,g.lor,g.lto,g.lpf,g.last,
+g.wscore-b.ppgo as wteam_inc,
+g.lscore - a.ppg as lteam_inc,
+(g.wscore-b.ppgo) - (g.lscore - b.ppg) as wteam_index
+from game_reg_basic g
+inner join agg_season_team a on g.season = a.season and g.wteam=a.team_id
+inner join agg_season_team b on g.season = b.season and g.lteam=b.team_id;
+
+create table agg_win_custom as
+select season, wteam as team_id, avg(wteam_index) as my_windex,
+avg(wtempo) as my_wtempo, avg(ltempo) as my_opp_ltempo, avg(w2pc) as my_w2pc, avg(w3pc) as my_w3pc, avg(wftpc) as my_wftpc,
+avg(wblk) as my_wblk, avg(wstl) as my_wstl, avg(wdr) as my_wdr, avg(wor) as my_wor,
+avg(wto) as my_wto, avg(wpf) as my_wpf, avg(c.wast) as my_wast
+from game_reg_custom_metrics c
+group by season, wteam;
+
+create table agg_loss_custom as
+select season, lteam as team_id, -avg(wteam_index) as my_lindex,
+avg(ltempo) as my_ltempo, avg(wtempo) as my_opp_wtempo, avg(l2pc) as my_l2pc, avg(l3pc) as my_l3pc, avg(lftpc) as my_lftpc,
+avg(lblk) as my_lblk, avg(lstl) as my_lstl, avg(ldr) as my_ldr, avg(lor) as my_lor,
+avg(lto) as my_lto, avg(lpf) as my_lpf, avg(c.last) as my_last
+from game_reg_custom_metrics c
+group by season, lteam;
+
+create table agg_win_custom_nc as
+select season, wteam as team_id, avg(wteam_index) as my_windex_nc
+/*,avg(wblk) as my_wblk, avg(wstl) as my_wstl, avg(wdr) as my_wdr, avg(wor) as my_wor,
+avg(wtempo) as wtempo, avg(w2pc) as w2pc, avg(w3pc) as w3pc,
+avg(wto) as my_wto, avg(wpf) as my_wpf, avg(wast) as my_wast*/
+from game_reg_custom_metrics
+where iconf = 'N'
+group by season, wteam;
+
+create table agg_loss_custom_nc as
+select season, lteam as team_id, -avg(wteam_index) as my_lindex_nc
+/*,avg(ltempo) as my_ltempo, avg(l2pc) as my_l2pc, avg(l3pc) as my_l3pc, avg(lftpc) as my_lftpc,
+avg(lblk) as my_lblk, avg(lstl) as my_lstl, avg(ldr) as my_ldr, avg(lor) as my_lor,
+avg(lto) as my_lto, avg(lpf) as my_lpf, avg(c.last) as my_last*/
+from game_reg_custom_metrics c
+where iconf = 'N'
+group by season, lteam;
+
+create table agg_season_team_features as
+select a.season,a.team_id,ppg,ppgo,mar,winperc,ppg_nc,ppgo_nc,mar_nc,winperc_nc,
+(ifnull(my_windex,0)*my_wgames+ifnull(my_lindex,0)*my_lgames)/my_totgames as idx,
+(ifnull(my_windex_nc,0)*my_wncgames+ifnull(my_lindex_nc,0)*my_lncgames)/my_ncgames as idx_nc,
+my_wtempo+ifnull(my_ltempo,0)/my_totgames as tempo, 
+ppg/(my_wtempo+ifnull(my_ltempo,0)/my_totgames) as eff_off,
+ppgo/(ifnull(my_opp_wtempo,0)+my_opp_ltempo/my_totgames) as eff_def,
+(my_w3pc * my_wgames + ifnull(my_l3pc,0) * ifnull(my_lgames,0)) / my_totgames as 3pc,
+(my_w2pc * my_wgames + ifnull(my_l2pc,0) * ifnull(my_lgames,0)) / my_totgames as 2pc,
+(my_wftpc * my_wgames + ifnull(my_lftpc,0) * ifnull(my_lgames,0)) / my_totgames as ftpc, 
+(my_wblk * my_wgames + ifnull(my_lblk,0) * ifnull(my_lgames,0)) / my_totgames as blk, 
+(my_wdr * my_wgames + ifnull(my_ldr,0) * ifnull(my_lgames,0)) / my_totgames as dreb, 
+(my_wor * my_wgames + ifnull(my_lor,0) * ifnull(my_lgames,0)) / my_totgames as oreb, 
+(my_wto * my_wgames + ifnull(my_lto,0) * ifnull(my_lgames,0)) / my_totgames as tnov, 
+(my_wpf * my_wgames + ifnull(my_lpf,0) * ifnull(my_lgames,0)) / my_totgames as pf, 
+(my_wast * my_wgames + ifnull(my_last,0) * ifnull(my_lgames,0)) / my_totgames as asst
+from agg_season_team a
+left join agg_win_custom b on a.season=b.season and a.team_id = b.team_id
+left join agg_loss_custom c on a.season=c.season and a.team_id = c.team_id
+left join agg_win_custom_nc d on a.season=d.season and a.team_id = d.team_id
+left join agg_loss_custom_nc e on a.season=e.season and a.team_id = e.team_id;
+
+update agg_season_team_features
+set idx_nc = idx
+where idx_nc IS NULL;
+
+select a.team_name, b.*
+from team a
+inner join agg_season_team_features b on b.team_id = a.team_id;
+
+drop table if exists game_reg_home_away;
+create table game_reg_home_away as
+select g.season, g.daynum, g.wloc,
+if(wloc='H',wteam,lteam) as hteam, if(wloc='H',wscore,lscore) as hscore,
+if(wloc!='H',wteam,lteam) as ateam, if(wloc!='H',wscore,lscore) as ascore,
+if(wloc='N',0,round(acos( sin(wlat*3.1416/180)*sin(llat*3.1416/180) + cos(wlat*3.1416/180)*cos(llat*3.1416/180)*cos(llng*3.1416/180-wlng*3.1416/180) ) * 6.371,2)) as distance,
+attendance,
+g.iconf
+from game_reg_basic g;
+
+drop table if exists home_away_means;
+create table home_away_means as
+select 
+g.iconf,
+avg(hscore) hmean, avg(ascore) amean,
+count(*) as sample
+from game_reg_home_away g
+where season &gt;= 2008 and wloc!='N';
+
+
+select 
+c1.conference, c1.strength,
+sum(if(wloc='H',wscore,lscore))/count(*) as hmean,sum(if(wloc='H',lscore,wscore))/count(*) as amean, 
+sum(if(wloc='H',wscore,lscore))/sum(if(wloc='H',lscore,wscore)) as rat,
+count(*) as sample
+from game_reg_basic g
+inner join team t1 on t1.team_id = g.wteam
+inner join conf c1 on c1.id=t1.conf_id
+inner join team t2 on t2.team_id = g.lteam
+inner join conf c2 on c2.id=t2.conf_id
+where wloc!='N'
+and season &gt;= 2008
+and g.iconf='Y'
+group by 
+c1.conference
+order by
+sum(if(wloc='H',wscore,lscore))/sum(if(wloc='H',lscore,wscore)) desc;
+
+
+/* Output games with average home and away scores */
+select g.season,g.daynum,if(g.wloc!='N',1,0) as hbias,g.hteam,g.hscore,g.ateam,g.ascore,g.distance,g.attendance,if(g.iconf='Y',1,0) as iconf,
+if(wloc!='N',hmean*0.95,(hmean+amean)/2) as hmean,
+if(wloc!='N',amean,(hmean+amean)/2) as amean
+from game_reg_home_away g
+inner join home_away_means ha on 1=1;
+
+select 
+g.iconf,
+avg(c1.strength),avg(c2.strength),
+avg(hscore),avg(ascore),
+avg(hscore)/avg(ascore),
+count(*) as sample
+from game_reg_home_away g
+inner join team t1 on t1.team_id = g.hteam
+inner join conf c1 on c1.id=t1.conf
+inner join team t2 on t2.team_id = g.ateam
+inner join conf c2 on c2.id=t2.conf_id
+where season &gt;= 2010
+group by g.iconf;
+
+
+select ta.team_name 
+from team_attendance ta left join team_names tn on ta.team_name = tn.team_name
+where tn.team_name is null;
+
+select * from agg_season_team_features where team_id = 1257</string>
+			<key>table</key>
+			<string>team</string>
+			<key>view</key>
+			<string>SP_VIEW_CUSTOMQUERY</string>
+			<key>windowVerticalDividerPosition</key>
+			<real>202</real>
+		</dict>
+	</dict>
+	<key>encrypted</key>
+	<false/>
+	<key>format</key>
+	<string>connection</string>
+	<key>queryFavorites</key>
+	<array/>
+	<key>queryHistory</key>
+	<array>
+		<string>drop table if exists game_reg_home_away;
+create table game_reg_home_away as
+select g.season, g.daynum, g.wloc,
+if(wloc='H',wteam,lteam) as hteam, if(wloc='H',wscore,lscore) as hscore,
+if(wloc!='H',wteam,lteam) as ateam, if(wloc!='H',wscore,lscore) as ascore,
+if(wloc='N',0,round(acos( sin(wlat*3.1416/180)*sin(llat*3.1416/180) + cos(wlat*3.1416/180)*cos(llat*3.1416/180)*cos(llng*3.1416/180-wlng*3.1416/180) ) * 6.371,2)) as distance,
+attendance,
+g.iconf
+from game_reg_basic g</string>
+		<string>select a.team_name, a.conf, a.attendance, b.*
+from team a
+inner join agg_season_team_features b on b.team_id = a.team_id</string>
+		<string>select a.team_name, b.*
+from team a
+inner join agg_season_team_features b on b.team_id = a.team_id</string>
+		<string>select * from agg_season_team_features where team_id = 1257</string>
+		<string>select ta.team_name 
+from team_attendance ta left join team_names tn on ta.team_name = tn.team_name
+where tn.team_name is null</string>
+		<string>select 
+g.iconf,
+avg(c1.strength),avg(c2.strength),
+avg(hscore),avg(ascore),
+avg(hscore)/avg(ascore),
+count(*) as sample
+from game_reg_home_away g
+inner join team t1 on t1.team_id = g.hteam
+inner join conf c1 on c1.id=t1.conf
+inner join team t2 on t2.team_id = g.ateam
+inner join conf c2 on c2.id=t2.conf_id
+where season &gt;= 2010
+group by g.iconf</string>
+		<string>update agg_season_team_features
+set idx_nc = idx
+where idx_nc IS NULL</string>
+		<string>update agg_season_team_features
+set my_ltempo = my_wtempo, my_l2pc = my_w2pc, my_l3pc=my_w3pc, 
+my_lftpc=my_wftpc, my_lblk=my_wblk, my_lstl=my_wstl, 
+my_ldr=my_wdr, my_lor=my_wdr, my_lto=my_wto, 
+my_lpf=my_wpf, my_last=my_wast
+where my_ltempo IS NULL</string>
+		<string>create table agg_season_team_features as
+select a.season,a.team_id,ppg,ppgo,mar,winperc,ppg_nc,ppgo_nc,mar_nc,winperc_nc,
+(ifnull(my_windex,0)*my_wgames+ifnull(my_lindex,0)*my_lgames)/my_totgames as idx,
+(ifnull(my_windex_nc,0)*my_wncgames+ifnull(my_lindex_nc,0)*my_lncgames)/my_ncgames as idx_nc,
+my_wtempo+ifnull(my_ltempo,0)/my_totgames as tempo, 
+ppg/(my_wtempo+ifnull(my_ltempo,0)/my_totgames) as eff_off,
+ppgo/(ifnull(my_opp_wtempo,0)+my_opp_ltempo/my_totgames) as eff_def,
+(my_w3pc * my_wgames + ifnull(my_l3pc,0) * ifnull(my_lgames,0)) / my_totgames as 3pc,
+(my_w2pc * my_wgames + ifnull(my_l2pc,0) * ifnull(my_lgames,0)) / my_totgames as 2pc,
+(my_wftpc * my_wgames + ifnull(my_lftpc,0) * ifnull(my_lgames,0)) / my_totgames as ftpc, 
+(my_wblk * my_wgames + ifnull(my_lblk,0) * ifnull(my_lgames,0)) / my_totgames as blk, 
+(my_wdr * my_wgames + ifnull(my_ldr,0) * ifnull(my_lgames,0)) / my_totgames as dreb, 
+(my_wor * my_wgames + ifnull(my_lor,0) * ifnull(my_lgames,0)) / my_totgames as oreb, 
+(my_wto * my_wgames + ifnull(my_lto,0) * ifnull(my_lgames,0)) / my_totgames as tnov, 
+(my_wpf * my_wgames + ifnull(my_lpf,0) * ifnull(my_lgames,0)) / my_totgames as pf, 
+(my_wast * my_wgames + ifnull(my_last,0) * ifnull(my_lgames,0)) / my_totgames as asst
+from agg_season_team a
+left join agg_win_custom b on a.season=b.season and a.team_id = b.team_id
+left join agg_loss_custom c on a.season=c.season and a.team_id = c.team_id
+left join agg_win_custom_nc d on a.season=d.season and a.team_id = d.team_id
+left join agg_loss_custom_nc e on a.season=e.season and a.team_id = e.team_id</string>
+		<string>create table agg_loss_custom_nc as
+select season, lteam as team_id, -avg(wteam_index) as my_lindex_nc
+/*,avg(ltempo) as my_ltempo, avg(l2pc) as my_l2pc, avg(l3pc) as my_l3pc, avg(lftpc) as my_lftpc,
+avg(lblk) as my_lblk, avg(lstl) as my_lstl, avg(ldr) as my_ldr, avg(lor) as my_lor,
+avg(lto) as my_lto, avg(lpf) as my_lpf, avg(c.last) as my_last*/
+from game_reg_custom_metrics c
+where iconf = 'N'
+group by season, lteam</string>
+		<string>create table agg_win_custom_nc as
+select season, wteam as team_id, avg(wteam_index) as my_windex_nc
+/*,avg(wblk) as my_wblk, avg(wstl) as my_wstl, avg(wdr) as my_wdr, avg(wor) as my_wor,
+avg(wtempo) as wtempo, avg(w2pc) as w2pc, avg(w3pc) as w3pc,
+avg(wto) as my_wto, avg(wpf) as my_wpf, avg(wast) as my_wast*/
+from game_reg_custom_metrics
+where iconf = 'N'
+group by season, wteam</string>
+		<string>create table agg_loss_custom as
+select season, lteam as team_id, -avg(wteam_index) as my_lindex,
+avg(ltempo) as my_ltempo, avg(wtempo) as my_opp_wtempo, avg(l2pc) as my_l2pc, avg(l3pc) as my_l3pc, avg(lftpc) as my_lftpc,
+avg(lblk) as my_lblk, avg(lstl) as my_lstl, avg(ldr) as my_ldr, avg(lor) as my_lor,
+avg(lto) as my_lto, avg(lpf) as my_lpf, avg(c.last) as my_last
+from game_reg_custom_metrics c
+group by season, lteam</string>
+		<string>create table agg_win_custom as
+select season, wteam as team_id, avg(wteam_index) as my_windex,
+avg(wtempo) as my_wtempo, avg(ltempo) as my_opp_ltempo, avg(w2pc) as my_w2pc, avg(w3pc) as my_w3pc, avg(wftpc) as my_wftpc,
+avg(wblk) as my_wblk, avg(wstl) as my_wstl, avg(wdr) as my_wdr, avg(wor) as my_wor,
+avg(wto) as my_wto, avg(wpf) as my_wpf, avg(c.wast) as my_wast
+from game_reg_custom_metrics c
+group by season, wteam</string>
+		<string>create table game_reg_custom_metrics as
+select g.season, g.daynum, g.iconf, g.wteam, g.wscore, g.lteam, g.lscore,
+g.wtempo,g.w2pc,g.w3pc,g.wftpc,g.wblk,g.wstl,g.wdr,g.wor,g.wto,g.wpf,g.wast,
+g.ltempo,g.l2pc,g.l3pc,g.lftpc,g.lblk,g.lstl,g.ldr,g.lor,g.lto,g.lpf,g.last,
+g.wscore-b.ppgo as wteam_inc,
+g.lscore - a.ppg as lteam_inc,
+(g.wscore-b.ppgo) - (g.lscore - b.ppg) as wteam_index
+from game_reg_basic g
+inner join agg_season_team a on g.season = a.season and g.wteam=a.team_id
+inner join agg_season_team b on g.season = b.season and g.lteam=b.team_id</string>
+		<string>create table game_reg_custom_metrics as
+select g.season, g.daynum, g.iconf, g.wteam, g.wscore, g.lteam, g.lscore,
+g.wtempo,g.w2pc,g.w3pc,g.wftpc,g.wblk,g.wstl,g.wdr,g.wor,g.wto,g.wpf,g.wast,
+g.ltempo,g.l2pc,g.l3pc,g.lftpc,g.lblk,g.lstl,g.ldr,g.lor,g.lto,g.lpf,g.last,
+g.wscore-b.ppgo as wteam_inc,
+g.lscore - a.ppg as lteam_inc,
+(g.wscore-b.ppgo) - (g.lscore - b.ppg) as wteam_index,
+g.conf
+from game_reg_basic g
+inner join agg_season_team a on g.season = a.season and g.wteam=a.team_id
+inner join agg_season_team b on g.season = b.season and g.lteam=b.team_id</string>
+		<string>create index idx_season_team_id
+ON agg_season_team(season, team_id)</string>
+		<string>update agg_season_team 
+set ppg  = (my_wpts*my_wgames+my_lpts*my_lgames)/my_totgames,
+ppgo = (my_opp_wpts*my_lgames+my_opp_lpts*my_wgames)/my_totgames,
+mar  = (my_wmar*my_wgames+my_lmar*my_lgames)/my_totgames,
+winperc = my_wgames/my_totgames,
+ppg_nc  = (my_wncpts*my_wncgames+my_lncpts*my_lncgames)/my_ncgames,
+ppgo_nc = (my_opp_wncpts*my_lncgames+my_opp_lncpts*my_wncgames)/my_ncgames,
+mar_nc  = (my_wncmar*my_wncgames+my_lncmar*my_lncgames)/my_ncgames,
+winperc_nc = my_wncgames/my_ncgames</string>
+		<string>alter table agg_season_team 
+add column ppg decimal(9,4) not null,
+add column ppgo decimal(9,4) not null,
+add column mar decimal(9,4) not null,
+add column winperc decimal(9,4) not null,
+add column ppg_nc decimal(9,4) not null,
+add column ppgo_nc decimal(9,4) not null,
+add column mar_nc decimal(9,4) not null,
+add column winperc_nc decimal(9,4) not null</string>
+		<string>create table agg_games_lost as
+select season, lteam as team_id, 
+avg(lscore) as my_lpts, avg(lscore-wscore) as my_lmar, avg(wscore) as my_opp_wpts, count(*) as my_lgames
+from game_reg_basic
+group by season, lteam;
+create table agg_games_won_nc as
+select season, wteam as team_id,
+avg(wscore) as my_wncpts, avg(wscore-lscore) as my_wncmar, avg(lscore) as my_opp_lncpts, count(*) as my_wncgames
+from game_reg_basic
+where iconf = 'N'
+group by season, wteam;
+create table agg_games_lost_nc as
+select season, lteam as team_id, 
+avg(lscore) as my_lncpts, avg(lscore-wscore) as my_lncmar, avg(wscore) as my_opp_wncpts, count(*) as my_lncgames
+from game_reg_basic
+where iconf = 'N'
+group by season, lteam;
+create table agg_season_team as
+select a.season, a.team_id,my_wpts,my_wmar,my_wgames,ifnull(my_lpts,0) my_lpts,ifnull(my_lmar,0) my_lmar,ifnull(my_lgames,0) my_lgames,ifnull(my_wncpts,0) my_wncpts,ifnull(my_wncmar,0) my_wncmar,ifnull(my_wncgames,0) my_wncgames,ifnull(my_lncpts,0) my_lncpts,ifnull(my_lncmar,0) my_lncmar,ifnull(my_lncgames,0) my_lncgames,ifnull(my_opp_wpts,0) my_opp_wpts,ifnull(my_opp_lpts,0) my_opp_lpts,ifnull(my_opp_wncpts,0) my_opp_wncpts,ifnull(my_opp_lncpts,0) my_opp_lncpts,
+my_wgames+ifnull(my_lgames,0) as my_totgames, my_wncgames+ifnull(my_lncgames,0) as my_ncgames
+from agg_games_won a
+left join agg_games_lost b on a.season=b.season and a.team_id = b.team_id
+left join agg_games_won_nc c on a.season=c.season and a.team_id = c.team_id
+left join agg_games_lost_nc d on a.season=d.season and a.team_id = d.team_id</string>
+		<string>create table agg_games_won as
+select season, wteam as team_id, 
+avg(wscore) as my_wpts, avg(wscore-lscore) as my_wmar, avg(lscore) as my_opp_lpts, count(*) as my_wgames
+from game_reg_basic
+group by season, wteam</string>
+	</array>
+	<key>rdbms_type</key>
+	<string>mysql</string>
+	<key>rdbms_version</key>
+	<string>5.5.47</string>
+	<key>version</key>
+	<integer>1</integer>
+</dict>
+</plist>
