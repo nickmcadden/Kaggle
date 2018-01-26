@@ -21,3 +21,35 @@ The more recent projects use a standardised directory structure
 Where the input directory contains the very large source data files usually in csv, h5 or json file format. This data is not replicated here.
 The output directory usually contains a number of csv files which are the individual submissions to the competition. These csv files are ignored in the github repository.
 
+The code directories usually contain many files which are of the following types
+
+Data import and transformation
+--------------------------------
+
+These files are prefixed with the word 'data'.
+They perform the job of reading the training and testing data files, and handling the following tasks.
+
+Reading the data files (usually in csv, h5 format)
+Imputing missing values
+Converting categorical data into numeric format
+Aggregating multiple input files into one if required
+
+Data processing
+----------------
+
+The main data processing is handled in files which are usually named with reference to the algorithm being used.
+These files will use one and only one of the data files within the same directory.
+Examples:
+xgb.py will process the data using the XGBoost algorithm.
+rf.py will process the data using the Random Forest algorithm.
+etc.py will process the data using the Extra Trees Classifier algorithm.
+
+The results are written to csv format within this section of code.
+
+Utility Files
+---------------
+These are additional files to help with the analysis. Examples include:
+Feature selection (useful for high dimensional data)
+Clustering (creating aditional data columns)
+Ensembling (aggregation of output csv predictions)
+
